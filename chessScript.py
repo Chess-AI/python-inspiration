@@ -7,6 +7,37 @@ import numpy as np
 
 board = chess.Board()
 points_array = np.zeros((8,8)) # currently a dummy variable with no real meaning
+depth = 5
+
+def miniMaxTreeBuilder():
+    every_legal_move_possible = list(board.legal_moves)
+    bestVal = -10000
+    bestMove
+    for currMove in every_legal_move_possible:
+        board.push_uci(currMove)
+        currVal = miniMax(depth - 1, isMax)
+        board.pop()
+        if (currVal > bestVal):
+            bestVal = currVal
+            bestMove = currMove
+    board.push_uci(bestMove)
+
+def minimax(curr_depth, isMax):
+    every_legal_move_possible = list(board.legal_moves)
+    best_val_for_maximizing_player = -10000
+    if (curr_depth == 0):
+        return evaluate_board(board)
+    if (isMax):
+        for currMove in every_legal_move_possible:
+            board.push_uci(currMove)
+            best_val_for_maximizing_player = max(miniMax(depth - 1, not(isMax)),best_val_for_maximizing_player)
+            board.pop()
+
+        # do stuff here
+    else:
+        # do min stuff here
+
+
 
 # This is a useful function to reverse the score arrays to be used for evaluation of board score
 def reverse_points_array(score_array):
@@ -21,12 +52,10 @@ def evaluate_board(board):
                 c = c.capitalize()
                 points_array[index][num] = index
                 chess_square = str(c)+str(num+1)
-                print(chess_square+':',end = '')
+                print(chess_square+':',end ='')
                 script = 'print(board.piece_at(chess.'+chess_square+'))'
                 exec(script)
         else:
-            global rev
-            rev = np.flip(points_array,axis=0)
             break
 
 def random_player(board):
@@ -105,4 +134,5 @@ def get_move(prompt):
 
 evaluate_board(board)
 print(points_array)
+miniMaxTreeBuilder()
 play_game(human_player, random_player)
