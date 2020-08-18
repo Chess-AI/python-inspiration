@@ -21,8 +21,8 @@ pawnEvalWhite = [
          [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
          [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
      ]
-pawnEvalblack = reverse_points_array(pawnEvalWhite)
-print(pawnEvalblack)
+pawnEvalBlack = reverse_points_array(pawnEvalWhite)
+
 knightEval = [
          [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
          [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
@@ -44,6 +44,8 @@ bishopEvalWhite = [
      [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
  ]
 
+bishopEvalBlack=reverse_points_array(bishopEvalWhite)
+
 rookEvalWhite = [
      [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
      [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
@@ -54,7 +56,7 @@ rookEvalWhite = [
      [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
      [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
  ]
-
+rookEvalBlack = reverse_points_array(rookEvalWhite)
 evalQueen = [
      [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
      [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
@@ -77,16 +79,32 @@ kingEvalWhite = [
      [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
  ]
 
-# def getPieceValue(piece, x, y):
-#     if (piece == None ):
-#         return 0
-#     if (piece == 'p'):
-#         return 10 + pawnEvalWhite[y][x]
-#     elif (piece == 'P'):
-#         return 10 + pawnEvalBlack[y][x]
-#     elif (piece == 'r'):
-#         return 50 + rookEvalWhite[y][x]
-#
+kingEvalBlack = reverse_points_array(kingEvalWhite)
+
+def getPieceValue(piece, x, y):
+    if (piece == 'P'):
+        return 10 + pawnEvalWhite[y][x]
+    elif (piece == 'p'):
+        return 10 + pawnEvalBlack[y][x]
+    elif (piece == 'R'):
+        return 50 + rookEvalWhite[y][x]
+    elif (piece == 'r'):
+        return 50 + rookEvalBlack[y][x]
+    elif (piece == 'n' or piece =='N'):
+        return 30 + knightEval[y][x]
+    elif (piece == 'B'):
+        return 30 + bishopEvalWhite[y][x]
+    elif (piece == 'b'):
+        return 30 + bishopEvalBlack[y][x]
+    elif (piece == 'Q' or piece == 'q'):
+        return 90 + evalQueen[y][x]
+    elif (piece == 'K'):
+        return 900 + kingEvalWhite[y][x]
+    elif (piece == 'k'):
+        return 900 + kingEvalBlack[y][x]
+    else:
+        return 0
+
 # def miniMaxTreeBuilder():
 #     every_legal_move_possible = list(board.legal_moves)
 #     bestVal = -10000
@@ -114,26 +132,32 @@ kingEvalWhite = [
 #         # do stuff here
 #     else:
 #         # do min stuff here
-#
-#
-#
-# # This is a useful function to reverse the score arrays to be used for evaluation of board score
-#
-#
-# # Currently, this function only prints out the kind of chess piece at every position on the board
-# def evaluate_board(board):
-#     board = chess.Board(board.fen())
-#     for (index,c) in enumerate(ascii_lowercase):
-#         if (c<='h'):
-#             for num in range(0,8):
-#                 c = c.capitalize()
-#                 points_array[index][num] = index
-#                 chess_square = str(c)+str(num+1)
-#                 print(chess_square+':',end ='')
-#                 script = 'print(board.piece_at(chess.'+chess_square+'))'
-#                 exec(script)
-#         else:
-#             break
+
+
+
+# This is a useful function to reverse the score arrays to be used for evaluation of board score
+
+
+# Currently, this function only prints out the kind of chess piece at every position on the board
+def evaluate_board(board):
+    currScore = 0
+    board = chess.Board(board.fen())
+    for (index,c) in enumerate(ascii_lowercase):
+        if (c<='h'):
+            for num in range(0,8):
+                c = c.capitalize()
+                points_array[index][num] = index
+                chess_square = str(c)+str(num+1)
+                piece = ''
+                script = 'board.piece_at(chess.'+chess_square+')'
+                piece = str(eval(script))
+                # print(piece)
+                piece_score = getPieceValue(piece,index,num)
+                # print(piece_score)
+                currScore = currScore + piece_score
+        else:
+            print(currScore)
+            return currScore
 
 def random_player(board):
     move = random.choice(list(board.legal_moves))
@@ -157,6 +181,7 @@ def play_game(player1, player2, visual="svg", pause=0.1):
     board = chess.Board()
     try:
         while not board.is_game_over(claim_draw=True):
+            evaluate_board(board)
             if board.turn == chess.WHITE:
                 uci = player1(board)
             else:
@@ -210,6 +235,6 @@ def get_move(prompt):
     return uci
 
 evaluate_board(board)
-print(points_array)
-miniMaxTreeBuilder()
+#print(points_array)
+#miniMaxTreeBuilder()
 play_game(human_player, random_player)
