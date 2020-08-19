@@ -4,13 +4,17 @@ import time
 from IPython.display import display, HTML, clear_output
 from string import ascii_lowercase
 import numpy as np
+import sys
+
+sys.setrecursionlimit(80000)
 
 def reverse_points_array(score_array):
     return np.flip(score_array,axis=0)
 
+global board
 board = chess.Board()
 points_array = np.zeros((8,8)) # currently a dummy variable with no real meaning
-depth = 5
+depth = 2
 pawnEvalWhite = [
          [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
          [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
@@ -47,16 +51,17 @@ bishopEvalWhite = [
 bishopEvalBlack=reverse_points_array(bishopEvalWhite)
 
 rookEvalWhite = [
-     [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
-     [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
-     [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-     [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-     [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-     [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-     [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
-     [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+     [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+     [0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+     [-0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+     [-0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+     [-0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+     [-0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+     [-0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+     [0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
  ]
 rookEvalBlack = reverse_points_array(rookEvalWhite)
+
 evalQueen = [
      [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
      [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
@@ -85,53 +90,73 @@ def getPieceValue(piece, x, y):
     if (piece == 'P'):
         return 10 + pawnEvalWhite[y][x]
     elif (piece == 'p'):
-        return 10 + pawnEvalBlack[y][x]
+        return (10 + pawnEvalBlack[y][x])*(-1)
     elif (piece == 'R'):
         return 50 + rookEvalWhite[y][x]
     elif (piece == 'r'):
-        return 50 + rookEvalBlack[y][x]
+        return (50 + rookEvalBlack[y][x])*(-1)
     elif (piece == 'n' or piece =='N'):
-        return 30 + knightEval[y][x]
+        if (piece == 'N'):
+            return 30 + knightEval[y][x]
+        else:
+            return (30 + knightEval[y][x])*(-1)
     elif (piece == 'B'):
         return 30 + bishopEvalWhite[y][x]
     elif (piece == 'b'):
-        return 30 + bishopEvalBlack[y][x]
+        return (30 + bishopEvalBlack[y][x])*(-1)
     elif (piece == 'Q' or piece == 'q'):
-        return 90 + evalQueen[y][x]
+        if (piece == 'Q'):
+            return 90 + evalQueen[y][x]
+        else:
+            return (90 + evalQueen[y][x])*(-1)
     elif (piece == 'K'):
         return 900 + kingEvalWhite[y][x]
     elif (piece == 'k'):
-        return 900 + kingEvalBlack[y][x]
+        return (900 + kingEvalBlack[y][x])*(-1)
     else:
         return 0
 
-# def miniMaxTreeBuilder():
-#     every_legal_move_possible = list(board.legal_moves)
-#     bestVal = -10000
-#     bestMove
-#     for currMove in every_legal_move_possible:
-#         board.push_uci(currMove)
-#         currVal = miniMax(depth - 1, not(isMax))
-#         board.pop()
-#         if (currVal > bestVal):
-#             bestVal = currVal
-#             bestMove = currMove
-#     board.push_uci(bestMove)
-#
-# def minimax(curr_depth, isMax):
-#     every_legal_move_possible = list(board.legal_moves)
-#     best_val_for_maximizing_player = -10000
-#     if (curr_depth == 0):
-#         return evaluate_board(board)
-#     if (isMax):
-#         for currMove in every_legal_move_possible:
-#             board.push_uci(currMove)
-#             best_val_for_maximizing_player = max(miniMax(depth - 1, not(isMax)),best_val_for_maximizing_player)
-#             board.pop()
-#
-#         # do stuff here
-#     else:
-#         # do min stuff here
+def miniMax(curr_depth, isMax):
+    global board
+    every_legal_move_possible = list(board.legal_moves)
+    best_val_for_maximizing_player = -9999
+    best_val_for_minimizing_player = 9999
+    if (curr_depth == 0):
+        return evaluate_board()
+    if (isMax):
+        for currMove in every_legal_move_possible:
+            board.push_uci(currMove.uci())
+            best_val_for_maximizing_player = max(miniMax(depth - 1, not(isMax)),best_val_for_maximizing_player)
+            board.pop()
+        return best_val_for_maximizing_player
+    else:
+        for currMove in every_legal_move_possible:
+            board.push_uci(currMove.uci())
+            best_val_for_minimizing_player = min(miniMax(depth - 1, not(isMax)),best_val_for_minimizing_player)
+            board.pop()
+        return best_val_for_minimizing_player
+
+def miniMaxTreeBuilder():
+    global board
+    isMax = True
+    board = chess.Board(board.fen())
+    every_legal_move_possible = list(board.legal_moves)
+    # print(every_legal_move_possible)
+    bestVal = -9999
+    bestMove
+    for currMove in every_legal_move_possible:
+        uci = currMove.uci()
+        board.push(currMove)
+        currVal = miniMax(depth - 1, not(isMax))
+        # print(uci +':'+str(currVal))
+        board.pop()
+        if (currVal > bestVal):
+            # print("entered")
+            bestVal = currVal
+            bestMove = currMove
+    return bestMove
+
+
 
 
 
@@ -139,9 +164,9 @@ def getPieceValue(piece, x, y):
 
 
 # Currently, this function only prints out the kind of chess piece at every position on the board
-def evaluate_board(board):
+def evaluate_board():
+    global board
     currScore = 0
-    board = chess.Board(board.fen())
     for (index,c) in enumerate(ascii_lowercase):
         if (c<='h'):
             for num in range(0,8):
@@ -156,11 +181,12 @@ def evaluate_board(board):
                 # print(piece_score)
                 currScore = currScore + piece_score
         else:
-            print(currScore)
+            #print(currScore)
             return currScore
 
-def random_player(board):
-    move = random.choice(list(board.legal_moves))
+def random_player():
+    move = miniMaxTreeBuilder()
+    # move = random.choice(list(board.legal_moves))
     return move.uci()
 
 def who(player):
@@ -178,16 +204,16 @@ def play_game(player1, player2, visual="svg", pause=0.1):
     visual: "simple" | "svg" | None
     """
     use_svg = (visual == "svg")
-    board = chess.Board()
+    global board
     try:
         while not board.is_game_over(claim_draw=True):
-            evaluate_board(board)
             if board.turn == chess.WHITE:
-                uci = player1(board)
+                uci = player1()
+                board.push_uci(uci)
             else:
-                uci = player2(board)
+                uci = player2()
+                board.push_uci(uci)
             name = who(board.turn)
-            board.push_uci(uci)
             board_stop = display_board(board, use_svg)
             html = "<b>Move %s %s, Play '%s':</b><br/>%s" % (
                        len(board.move_stack), name, uci, board_stop)
@@ -216,7 +242,8 @@ def play_game(player1, player2, visual="svg", pause=0.1):
         print(msg)
     return (result, msg, board)
 
-def human_player(board):
+def human_player():
+    global board
     display(board)
     uci = get_move("%s's move [q to quit]> " % who(board.turn))
     legal_uci_moves = [move.uci() for move in board.legal_moves]
@@ -234,7 +261,6 @@ def get_move(prompt):
         uci = None
     return uci
 
-evaluate_board(board)
 #print(points_array)
 #miniMaxTreeBuilder()
 play_game(human_player, random_player)
