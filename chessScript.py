@@ -14,7 +14,7 @@ def reverse_points_array(score_array):
 global board
 board = chess.Board()
 points_array = np.zeros((8,8)) # currently a dummy variable with no real meaning
-depth = 2
+depth = 3
 pawnEvalWhite = [
          [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
          [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
@@ -126,13 +126,13 @@ def miniMax(curr_depth, isMax):
     if (isMax):
         for currMove in every_legal_move_possible:
             board.push_uci(currMove.uci())
-            best_val_for_maximizing_player = max(miniMax(depth - 1, not(isMax)),best_val_for_maximizing_player)
+            best_val_for_maximizing_player = max(miniMax(curr_depth - 1, not(isMax)),best_val_for_maximizing_player)
             board.pop()
         return best_val_for_maximizing_player
     else:
         for currMove in every_legal_move_possible:
             board.push_uci(currMove.uci())
-            best_val_for_minimizing_player = min(miniMax(depth - 1, not(isMax)),best_val_for_minimizing_player)
+            best_val_for_minimizing_player = min(miniMax(curr_depth - 1, not(isMax)),best_val_for_minimizing_player)
             board.pop()
         return best_val_for_minimizing_player
 
@@ -143,7 +143,7 @@ def miniMaxTreeBuilder():
     every_legal_move_possible = list(board.legal_moves)
     # print(every_legal_move_possible)
     bestVal = -9999
-    bestMove
+    bestMove : Any
     for currMove in every_legal_move_possible:
         uci = currMove.uci()
         board.push(currMove)
