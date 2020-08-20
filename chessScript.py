@@ -122,7 +122,7 @@ def miniMax(curr_depth, isMax):
     best_val_for_maximizing_player = -9999
     best_val_for_minimizing_player = 9999
     if (curr_depth == 0):
-        return evaluate_board()
+        return -evaluate_board()
     if (isMax):
         for currMove in every_legal_move_possible:
             board.push_uci(currMove.uci())
