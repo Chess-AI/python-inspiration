@@ -146,7 +146,7 @@ def minimax(curr_depth, isMax, alpha, beta):
         for currMove in legal_uci_moves:
             board.push_uci(currMove)
             best_val_for_minimizing_player = min(minimax(curr_depth - 1, not(isMax), alpha, beta),best_val_for_minimizing_player)
-            beta = min(alpha,best_val_for_minimizing_player)
+            beta = min(beta,best_val_for_minimizing_player)
             board.pop()
             if beta <= alpha:
                 break
